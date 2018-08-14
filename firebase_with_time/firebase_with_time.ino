@@ -8,8 +8,8 @@
 #define SENSOR_ID "sensor1"
 
 // Set WiFi connection
-#define WIFI_SSID "CEJARA5"
-#define WIFI_PASSWORD "Cejara798844500"
+#define WIFI_SSID "Germanito"
+#define WIFI_PASSWORD "rwwc7317"
 
 // Set database keys
 #define CAPACITY_KEY "capacidad"
@@ -39,12 +39,23 @@ char history_path[20];
 int capacity = 0;
 int occupied = 0;
 
+// Pins for buttons
+int plusOne = D7;
+int minusOne = D8;
+
+//debug
+int plusRead;
+
 // Variable for timestamp
 unsigned long secsSince1970;
 
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
+
+  // set button pins as inputs
+  pinMode(plusOne, INPUT); 
+  pinMode(minusOne, INPUT);
   
   Serial.begin(9600);
 
@@ -106,30 +117,43 @@ void setup() {
 
 void loop() {
   // Simulate Button
-  delay(500);
-  digitalWrite(LED_BUILTIN, HIGH);
+  delay(50);
+  //digitalWrite(LED_BUILTIN, HIGH);
 
   // Read incoming data
   secsSince1970 = now();
-  if (occupied < capacity) {
+  /*if (occupied < capacity) {
     ++occupied;
   } else {
     occupied = 0;
+  }*/
+  //plusRead = digitalRead(plusOne);
+  //Serial.println(plusRead);
+  
+  if (digitalRead(plusOne) == HIGH){
+    if (occupied < capacity){
+      ++occupied; 
+    }
+  }
+  if (digitalRead(minusOne) == 1){
+    if (occupied > 0){
+      --occupied;
+    }
   }
   
   Serial.println(occupied);
 
   // Send nudes
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& root = jsonBuffer.createObject();
-  root[HISTORY_OCCUPIED_KEY] = occupied;
-  root[HISTORY_TIME_KEY] = secsSince1970;
+  //StaticJsonBuffer<200> jsonBuffer;
+  //JsonObject& root = jsonBuffer.createObject();
+  //root[HISTORY_OCCUPIED_KEY] = occupied;
+  //root[HISTORY_TIME_KEY] = secsSince1970;
   
   Firebase.setInt(occupied_path, occupied);
-  Firebase.push(history_path, root);
+  //Firebase.push(history_path, root);
   
-  delay(500);
-  digitalWrite(LED_BUILTIN, LOW);
+  //delay(500);
+  //digitalWrite(LED_BUILTIN, LOW);
 }
 
 // send an NTP request to the time server at the given address
@@ -160,7 +184,7 @@ unsigned long sendNTPpacket(IPAddress& address)
 unsigned long setUnixTime() {
   // We've received a packet, read the data from it
   udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-  //the timestamp starts at byte 40 of the received packet and is four bytes,
+  //the timestamp starts at byte 40 of the received packet and is four bytes,f
   // or two words, long. First, esxtract the two words:
   unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
   unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
